@@ -79,6 +79,40 @@ def scrape_udemy(url: str) -> dict | None:
     print(f"  Headline : {headline[:60] or '⚠️ empty'}")
     print(f"  Full text: {len(full_text)} chars")
     return result
+import requests
+
+WEBHOOK_URL    = "http://localhost:8000/webhook/ingest"
+WEBHOOK_SECRET = "super-secret-webhook-key-change-in-production"
+
+def send_to_backend(company: str, data: dict):
+    payload = {
+        "source_id":   company.lower().replace(" ", "-"),  # e.g. "scaler"
+        "source_type": "landing_page",
+        "data": {
+            "headline": data.get("headline", ""),
+            "keywords": data.get("full_text", "").split()[:20],
+            "plans": [
+                {
+                    "name":     "main",
+                    "price":    data.get("pricing_text", ""),
+                    "features": data.get("subheadlines", [])
+                }
+            ]
+        }
+    }
+    try:
+        response = requests.post(
+            WEBHOOK_URL,
+            json=payload,
+            headers={"x-webhook-secret": WEBHOOK_SECRET},
+            timeout=10
+        )
+        print(f"  ✅ Sent to backend: {response.status_code}")
+        return response.json()
+    except Exception as e:
+        print(f"  ❌ Backend send failed: {e}")
+        return None
+
 def run():
     print(f"\n{'='*50}")
     print(f"  SCRAPING: {COMPANY}")
