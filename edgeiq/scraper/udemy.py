@@ -79,8 +79,6 @@ def scrape_udemy(url: str) -> dict | None:
     print(f"  Headline : {headline[:60] or '⚠️ empty'}")
     print(f"  Full text: {len(full_text)} chars")
     return result
-
-
 def run():
     print(f"\n{'='*50}")
     print(f"  SCRAPING: {COMPANY}")
