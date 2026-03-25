@@ -6,6 +6,7 @@ from app.routers import webhook
 from datetime import datetime
 import logging
 import subprocess
+from fastapi.middleware.cors import CORSMiddleware
 
 logging.basicConfig(level=logging.INFO)
 
@@ -23,6 +24,18 @@ app = FastAPI(
     description="Monitors external sources for pricing, keyword, and messaging changes.",
     version="1.0.0",
     lifespan=lifespan,
+)
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=[
+        "http://localhost:3000",   # Node.js
+        "http://localhost:5173",   # React Vite
+        "http://localhost:5174",   # React alternate port
+        "*",                       # open during hackathon
+    ],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
 )
 
 app.include_router(webhook.router)
@@ -55,6 +68,11 @@ def ingest(data: ScrapedData):
 
 
 @app.post("/rescrape")
+
+
+# ADD this right after app = FastAPI(...)
+
+
 def rescrape():
     try:
         # Go to scraper folder and run spiders
@@ -73,7 +91,86 @@ def rescrape():
     except Exception as e:
         return {"error": str(e)}
 
+# ADD these routes to app/main.py
 
 @app.get("/health")
 async def health():
-    return {"status": "ok"}
+    return {"status": "ok", "service": "EdgeIQ Python Backend"}
+
+@app.get("/api/snapshots")
+async def get_snapshots(db: AsyncSession = Depends(get_db)):
+    # Query your existing snapshots/events table
+    result = await db.execute(
+        select(ChangeEvent).order_by(ChangeEvent.detected_at.desc()).limit(50)
+    )
+    events = result.scalars().all()
+    return [
+        {
+            "source_id":   e.source_id,
+            "source_type": e.source_type,
+            "change_type": e.change_type,
+            "severity":    e.severity,
+            "detected_at": str(e.detected_at),
+            "summary":     e.summary,
+        }
+        for e in events
+    ]
+
+@app.get("/api/sources")
+
+# ADD these routes to app/main.py
+
+@app.get("/health")
+async def health():
+    return {"status": "ok", "service": "EdgeIQ Python Backend"}
+
+@app.get("/api/snapshots")
+async def get_snapshots(db: AsyncSession = Depends(get_db)):
+    # Query your existing snapshots/events table
+    result = await db.execute(
+        select(ChangeEvent).order_by(ChangeEvent.detected_at.desc()).limit(50)
+    )
+    events = result.scalars().all()
+    return [
+        {
+            "source_id":   e.source_id,
+            "source_type": e.source_type,
+            "change_type": e.change_type,
+            "severity":    e.severity,
+            "detected_at": str(e.detected_at),
+            "summary":     e.summary,
+        }
+        for e in events
+    ]
+
+@app.get("/health")
+async def health():
+    return {"status": "ok", "service": "EdgeIQ Python Backend"}
+
+@app.get("/api/snapshots")
+async def get_snapshots(db: AsyncSession = Depends(get_db)):
+    # Query your existing snapshots/events table
+    result = await db.execute(
+        select(ChangeEvent).order_by(ChangeEvent.detected_at.desc()).limit(50)
+    )
+    events = result.scalars().all()
+    return [
+        {
+            "source_id":   e.source_id,
+            "source_type": e.source_type,
+            "change_type": e.change_type,
+            "severity":    e.severity,
+            "detected_at": str(e.detected_at),
+            "summary":     e.summary,
+        }
+        for e in events
+    ]
+
+@app.get("/api/sources")
+async def get_sources(db: AsyncSession = Depends(get_db)):
+    # Return list of unique tracked competitors
+    result = await db.execute(
+        select(ChangeEvent.source_id).distinct()
+    )
+    sources = result.scalars().all()
+    return {"sources": sources}
