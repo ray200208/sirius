@@ -14,7 +14,40 @@ URLS      = [
 ]
 OUTPUT    = "../data/scaler.json"
 
+# ADD to bottom of each scraper (scaler.py, gfg.py etc.)
+import requests
 
+WEBHOOK_URL    = "http://localhost:8000/webhook/ingest"
+WEBHOOK_SECRET = "super-secret-webhook-key-change-in-production"
+
+def send_to_backend(company: str, data: dict):
+    payload = {
+        "source_id":   company.lower().replace(" ", "-"),  # e.g. "scaler"
+        "source_type": "landing_page",
+        "data": {
+            "headline": data.get("headline", ""),
+            "keywords": data.get("full_text", "").split()[:20],
+            "plans": [
+                {
+                    "name":     "main",
+                    "price":    data.get("pricing_text", ""),
+                    "features": data.get("subheadlines", [])
+                }
+            ]
+        }
+    }
+    try:
+        response = requests.post(
+            WEBHOOK_URL,
+            json=payload,
+            headers={"x-webhook-secret": WEBHOOK_SECRET},
+            timeout=10
+        )
+        print(f"  ✅ Sent to backend: {response.status_code}")
+        return response.json()
+    except Exception as e:
+        print(f"  ❌ Backend send failed: {e}")
+        return None
 def scrape_scaler(url: str) -> dict | None:
     """Scrape one Scaler page and return structured data"""
 
@@ -116,7 +149,8 @@ def run():
     for url in URLS:
         result = scrape_scaler(url)
         if result:
-            all_results.append(result)
+            save_json(result, OUTPUT)
+            send_to_backend("Scaler", result) 
 
     # Merge all pages into one record
     if all_results:
