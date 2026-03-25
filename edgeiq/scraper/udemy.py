@@ -120,6 +120,7 @@ def run():
     result = scrape_udemy(URLS[0])
     if result:
         save_json(result, OUTPUT)
+        send_to_backend("Scaler", result) 
         print(f"\n✅ {COMPANY} scraping complete!")
 
 
