@@ -5,6 +5,7 @@ from pydantic import BaseModel
 from app.routers import webhook
 from datetime import datetime
 import logging
+import subprocess
 
 logging.basicConfig(level=logging.INFO)
 
@@ -51,6 +52,28 @@ def ingest(data: ScrapedData):
         "status": "success",
         "profile": profile
     }
+
+
+@app.post("/rescrape")
+def rescrape():
+    try:
+        # Go to scraper folder and run spiders
+        subprocess.run(
+            ["python", "-m", "scrapy", "crawl", "scaler", "-o", "../data/scaler_rescrape.json"],
+            cwd="scraper"
+        )
+
+        subprocess.run(
+            ["python", "-m", "scrapy", "crawl", "gfg", "-o", "../data/gfg_rescrape.json"],
+            cwd="scraper"
+        )
+
+        return {"status": "rescrape completed"}
+
+    except Exception as e:
+        return {"error": str(e)}
+
+
 @app.get("/health")
 async def health():
     return {"status": "ok"}
