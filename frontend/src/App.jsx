@@ -3,6 +3,7 @@ import Overview from "./pages/Overview";
 import Insights from "./pages/Insights";
 import Changes from "./pages/Changes";
 import AskAI from "./pages/AskAI";
+import DomainSelect from "./pages/DomainSelect";
 
 function App() {
   return (
@@ -15,11 +16,12 @@ function App() {
   }}>
       <BrowserRouter>
         <Routes>
-          <Route path="/" element={<Overview />} />
-          <Route path="/insights" element={<Insights />} />
-          <Route path="/changes" element={<Changes />} />
-          <Route path="/ask" element={<AskAI />} />
-        </Routes>
+  <Route path="/" element={<DomainSelect />} />
+  <Route path="/overview" element={<Overview />} />
+  <Route path="/insights" element={<Insights />} />
+  <Route path="/changes" element={<Changes />} />
+  <Route path="/ask" element={<AskAI />} />
+</Routes>
       </BrowserRouter>
     </div>
   );
