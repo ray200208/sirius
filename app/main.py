@@ -1,7 +1,9 @@
 from fastapi import FastAPI
 from contextlib import asynccontextmanager
 from app.db.database import engine, Base
+from pydantic import BaseModel
 from app.routers import webhook
+from datetime import datetime
 import logging
 
 logging.basicConfig(level=logging.INFO)
@@ -24,7 +26,31 @@ app = FastAPI(
 
 app.include_router(webhook.router)
 
+class ScrapedData(BaseModel):
+    company: str
+    url: str
+    scraped_at: str
+    headline: str
+    subheadlines: list[str]
+    cta_buttons: list[str]
+    pricing_text: str
+    full_text: str
 
+@app.post("/ingest")
+def ingest(data: ScrapedData):
+    # 🔥 THIS IS WHERE YOUR PIPELINE CONTINUES
+
+    # Example processing (P4 logic)
+    profile = {
+        "audience": "beginner" if "beginner" in data.full_text.lower() else "job-seeker",
+        "pricing": "premium" if "100000" in data.pricing_text else "budget"
+    }
+
+    # Save to DB (or mock for now)
+    return {
+        "status": "success",
+        "profile": profile
+    }
 @app.get("/health")
 async def health():
     return {"status": "ok"}
