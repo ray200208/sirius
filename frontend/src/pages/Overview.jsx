@@ -4,6 +4,7 @@ import { useNavigate } from "react-router-dom";
 
 function Overview() {
   const [company, setCompany] = useState("");
+  const [competitors, setCompetitors] = useState("");
   const [url, setUrl] = useState("");
 
   const navigate = useNavigate();
@@ -11,25 +12,27 @@ function Overview() {
   // Get selected domain
   const domain = localStorage.getItem("domain");
 
-  const handleSubmit = () => {
-    console.log("Button clicked");
+ const handleSubmit = () => {
+  console.log("Button clicked");
 
-    if (!company || !url) {
-      alert("Please fill all fields");
-      return;
-    }
+  if (!company || !url || !competitors) {
+    alert("Please fill all fields");
+    return;
+  }
 
-    // Store data for other pages
-    localStorage.setItem("company", company);
-    localStorage.setItem("url", url);
+  // Store data for other pages
+  localStorage.setItem("competitors", competitors);
+  localStorage.setItem("company", company);
+  localStorage.setItem("url", url);
 
-    console.log("Domain:", domain);
-    console.log("Company:", company);
-    console.log("Website:", url);
+  console.log("Domain:", domain);
+  console.log("Company:", company);
+  console.log("Competitors:", competitors);
+  console.log("Website:", url);
 
-    // Navigate to insights page
-    navigate("/insights");
-  };
+  // Navigate to insights page
+  navigate("/insights");
+};
 
   return (
     <div>
@@ -87,6 +90,22 @@ function Overview() {
             borderRadius: "5px",
           }}
         />
+        <input
+  type="text"
+  placeholder="Competitor Names (comma separated)"
+  value={competitors}
+  onChange={(e) => setCompetitors(e.target.value)}
+  style={{
+    display: "block",
+    margin: "10px 0",
+    padding: "10px",
+    width: "100%",
+    backgroundColor: "#020617",
+    color: "white",
+    border: "1px solid #334155",
+    borderRadius: "5px",
+  }}
+/>
 
         <button
           onClick={handleSubmit}
